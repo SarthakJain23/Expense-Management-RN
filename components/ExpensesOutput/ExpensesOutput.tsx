@@ -1,5 +1,6 @@
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Expense } from "../../configs/types";
+import { GlobalStyles } from "../../constants/styles";
 import ExpensesList from "./ExpensesList";
 import ExpensesSummary from "./ExpensesSummary";
 
@@ -13,11 +14,19 @@ const ExpensesOutput: React.FC<ExpensesOutputProps> = ({
   periodName,
 }) => {
   return (
-    <View>
+    <View style={styles.container}>
       <ExpensesSummary expenses={expenses} periodName={periodName} />
       <ExpensesList expenses={expenses} />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    backgroundColor: GlobalStyles.colors.primary700,
+  },
+});
 
 export default ExpensesOutput;
