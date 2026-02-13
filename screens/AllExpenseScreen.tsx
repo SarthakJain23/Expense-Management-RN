@@ -1,8 +1,16 @@
 import ExpensesOutput from "../components/ExpensesOutput/ExpensesOutput";
-import { DUMMY_EXPENSES } from "../dummy-data/expenses";
+import { useExpenses } from "../store/expenses-context";
 
 const AllExpenseScreen: React.FC = () => {
-  return <ExpensesOutput expenses={DUMMY_EXPENSES} periodName="Total" />;
+  const { expenses } = useExpenses();
+
+  return (
+    <ExpensesOutput
+      expenses={expenses}
+      periodName="Total"
+      fallbackText="No expenses found for this period."
+    />
+  );
 };
 
 export default AllExpenseScreen;
