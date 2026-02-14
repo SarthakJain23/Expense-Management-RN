@@ -5,6 +5,7 @@ import IconButton from "../components/UI/IconButton";
 import { Expense, RootStackParamList } from "../configs/types";
 import { GlobalStyles } from "../constants/styles";
 import { useExpenses } from "../store/expenses-context";
+import { getFormattedDate } from "../util/date";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ManageExpense">;
 
@@ -17,17 +18,11 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.goBack();
   };
 
-  const confirmHandler = ({ amount, date, description }: ExpenseFormData) => {
-    const data: Expense = {
-      id: expenseId || Math.random().toString(),
-      description,
-      amount: parseFloat(amount),
-      date: new Date(date),
-    };
+  const confirmHandler = (values: Expense) => {
     if (isEditing) {
-      updateExpense(expenseId!, data);
+      updateExpense(expenseId!, values);
     } else {
-      addExpense(data);
+      addExpense(values);
     }
     navigation.goBack();
   };
@@ -42,7 +37,7 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
       if (expense) {
         return {
           amount: expense.amount.toString(),
-          date: expense.date.toISOString().slice(0, 10),
+          date: getFormattedDate(expense.date),
           description: expense.description,
         };
       }

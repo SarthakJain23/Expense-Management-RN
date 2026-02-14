@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { Expense } from "../configs/types";
 import Button from "./UI/Button";
 import Input from "./UI/Input";
 
@@ -10,13 +11,15 @@ export type ExpenseFormData = {
 };
 
 interface ExpenseFormProps {
+  expnenseId?: string;
   submitButtonLabel: string;
   initialData: ExpenseFormData;
   onCancel: () => void;
-  onSubmit: (data: ExpenseFormData) => void;
+  onSubmit: (data: Expense) => void;
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({
+  expnenseId,
   initialData,
   submitButtonLabel,
   onCancel,
@@ -26,6 +29,25 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
   const onChangeInput = (field: keyof ExpenseFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const onSubmitHandler = () => {
+    const data: Expense = {
+      id: expnenseId || Math.random().toString(),
+      amount: parseFloat(formData.amount),
+      date: new Date(formData.date),
+      description: formData.description,
+    };
+
+    const amountIsValid = !isNaN(data.amount) && data.amount > 0;
+    const dateIsValid = data.date.toString() !== "Invalid Date";
+    const descriptionIsValid = data.description.trim().length > 0;
+
+    if (!amountIsValid || !dateIsValid || !descriptionIsValid) {
+      return;
+    }
+
+    onSubmit(data);
   };
 
   return (
@@ -58,7 +80,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
         <Button style={styles.button} onPress={onCancel} mode="flat">
           Cancel
         </Button>
-        <Button style={styles.button} onPress={() => onSubmit(formData)}>
+        <Button style={styles.button} onPress={onSubmitHandler}>
           {submitButtonLabel}
         </Button>
       </View>
