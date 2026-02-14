@@ -1,11 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import LoadingOverlay from "./LoadingOverlay";
 
 interface IconButtonProps {
   iconName: keyof typeof Ionicons.glyphMap;
   size: number;
   color: string;
+  isLoading?: boolean;
   onPress: () => void;
 }
 
@@ -13,8 +15,13 @@ const IconButton: React.FC<IconButtonProps> = ({
   iconName,
   size,
   color,
+  isLoading = false,
   onPress,
 }) => {
+  if (isLoading) {
+    return <LoadingOverlay />;
+  }
+
   return (
     <Pressable
       onPress={onPress}

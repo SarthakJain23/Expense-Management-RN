@@ -1,9 +1,18 @@
-import { createContext, useContext, useEffect, useReducer } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { Expense, ExpenseInput } from "../configs/types";
 import { fetchExpenses } from "../util/http";
 
 interface ExpensesContextType {
   expenses: Expense[];
+  error: string | null;
+  isExpensesLoading: boolean;
+  errorHandler: () => void;
   deleteExpense: (id: string) => void;
   addExpense: (expense: Expense) => void;
   setExpenses: (expenses: Expense[]) => void;
@@ -11,9 +20,12 @@ interface ExpensesContextType {
 }
 
 export const ExpensesContext = createContext<ExpensesContextType>({
+  error: null,
   expenses: [],
+  isExpensesLoading: false,
   addExpense: () => {},
   setExpenses: () => {},
+  errorHandler: () => {},
   deleteExpense: () => {},
   updateExpense: () => {},
 });
@@ -53,6 +65,8 @@ interface ExpensesContextProviderProps {
 const ExpensesContextProvider: React.FC<ExpensesContextProviderProps> = ({
   children,
 }) => {
+  const [error, setError] = useState<string | null>(null);
+  const [isExpensesLoading, setIsExpensesLoading] = useState(false);
   const [expenses, dispatch] = useReducer(expensesReducer, []);
 
   const addExpense = (expense: Expense) =>
@@ -63,10 +77,18 @@ const ExpensesContextProvider: React.FC<ExpensesContextProviderProps> = ({
     dispatch({ type: "UPDATE", payload: { id, expense } });
   const setExpenses = (expenses: Expense[]) =>
     dispatch({ type: "SET", payload: expenses });
+  const errorHandler = () => setError(null);
 
   const loadExpenses = async () => {
-    const expenses = await fetchExpenses();
-    setExpenses(expenses);
+    setIsExpensesLoading(true);
+    try {
+      const expenses = await fetchExpenses();
+      setExpenses(expenses);
+    } catch (error) {
+      setError("Could not fetch expenses - please try again later!");
+    } finally {
+      setIsExpensesLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -74,9 +96,12 @@ const ExpensesContextProvider: React.FC<ExpensesContextProviderProps> = ({
   }, []);
 
   const value: ExpensesContextType = {
+    error,
     expenses,
+    isExpensesLoading,
     addExpense,
     setExpenses,
+    errorHandler,
     deleteExpense,
     updateExpense,
   };

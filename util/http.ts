@@ -9,7 +9,6 @@ const api = axios.create({
 export const storeExpense = async (expense: ExpenseInput): Promise<Expense> => {
   try {
     const { data } = await api.post("/expenses.json", expense);
-    console.log(JSON.stringify(data));
     return { id: data.name, ...expense };
   } catch (error) {
     console.error("Error storing expense:", error);

@@ -39,17 +39,6 @@ const BottomTabNavigator: React.FC = () => {
       })}
     >
       <BottomTab.Screen
-        name="AllExpenses"
-        component={AllExpenseScreen}
-        options={{
-          title: "All Expenses",
-          tabBarLabel: "All",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
-          ),
-        }}
-      />
-      <BottomTab.Screen
         name="RecentExpenses"
         component={RecentExpenseScreen}
         options={{
@@ -57,6 +46,17 @@ const BottomTabNavigator: React.FC = () => {
           tabBarLabel: "Recent",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="hourglass" size={size} color={color} />
+          ),
+        }}
+      />
+      <BottomTab.Screen
+        name="AllExpenses"
+        component={AllExpenseScreen}
+        options={{
+          title: "All Expenses",
+          tabBarLabel: "All",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" size={size} color={color} />
           ),
         }}
       />

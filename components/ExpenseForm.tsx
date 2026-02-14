@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { ExpenseInput } from "../configs/types";
 import Button from "./UI/Button";
 import Input from "./UI/Input";
+import LoadingOverlay from "./UI/LoadingOverlay";
 
 type InputField<T> = {
   value: T;
@@ -16,7 +17,7 @@ export type ExpenseFormData = {
 };
 
 interface ExpenseFormProps {
-  expnenseId?: string;
+  isSubmitting: boolean;
   submitButtonLabel: string;
   initialData: ExpenseFormData;
   onCancel: () => void;
@@ -24,7 +25,7 @@ interface ExpenseFormProps {
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({
-  expnenseId,
+  isSubmitting,
   initialData,
   submitButtonLabel,
   onCancel,
@@ -39,7 +40,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const onSubmitHandler = () => {
     const data: ExpenseInput = {
       amount: parseFloat(formData.amount.value),
-      date: formData.date.value,
+      date: new Date(formData.date.value),
       description: formData.description.value,
     };
 
@@ -61,6 +62,10 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
     onSubmit(data);
   };
+
+  if (isSubmitting) {
+    return <LoadingOverlay />;
+  }
 
   return (
     <View style={styles.container}>

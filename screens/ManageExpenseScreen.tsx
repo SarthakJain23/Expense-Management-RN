@@ -1,6 +1,8 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import ExpenseForm, { ExpenseFormData } from "../components/ExpenseForm";
+import ErrorOverlay from "../components/UI/ErrorOverlay";
 import IconButton from "../components/UI/IconButton";
 import { ExpenseInput, RootStackParamList } from "../configs/types";
 import { GlobalStyles } from "../constants/styles";
@@ -14,25 +16,44 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
   const { expenseId } = route.params || {};
   const expensesCtx = useExpenses();
   const isEditing = Boolean(expenseId);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState({
+    isSubmitting: false,
+    isDeleting: false,
+  });
 
   const cancelHandler = () => {
     navigation.goBack();
   };
 
   const confirmHandler = async (values: ExpenseInput) => {
-    if (isEditing) {
-      await updateExpense(expenseId!, values);
-      expensesCtx.updateExpense(expenseId!, values);
-    } else {
-      const expense = await storeExpense(values);
-      expensesCtx.addExpense(expense);
+    setLoading((prev) => ({ ...prev, isSubmitting: true }));
+    try {
+      if (isEditing) {
+        await updateExpense(expenseId!, values);
+        expensesCtx.updateExpense(expenseId!, values);
+      } else {
+        const expense = await storeExpense(values);
+        expensesCtx.addExpense(expense);
+      }
+      navigation.goBack();
+    } catch (error) {
+      setError("Could not save data - please try again later!");
+    } finally {
+      setLoading((prev) => ({ ...prev, isSubmitting: false }));
     }
-    navigation.goBack();
   };
   const deleteExpenseHandler = async () => {
-    await deleteExpense(expenseId!);
-    expensesCtx.deleteExpense(expenseId!);
-    navigation.goBack();
+    setLoading((prev) => ({ ...prev, isDeleting: true }));
+    try {
+      await deleteExpense(expenseId!);
+      expensesCtx.deleteExpense(expenseId!);
+      navigation.goBack();
+    } catch (error) {
+      setError("Could not delete expense - please try again later!");
+    } finally {
+      setLoading((prev) => ({ ...prev, isDeleting: false }));
+    }
   };
 
   const getExpenseData = (): ExpenseFormData => {
@@ -63,6 +84,10 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
     };
   };
 
+  if (error) {
+    return <ErrorOverlay message={error} onConfirm={() => setError(null)} />;
+  }
+
   return (
     <View style={styles.container}>
       <ExpenseForm
@@ -70,6 +95,7 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
         onCancel={cancelHandler}
         onSubmit={confirmHandler}
         submitButtonLabel={isEditing ? "Update" : "Add"}
+        isSubmitting={loading.isSubmitting}
       />
 
       {isEditing && (
@@ -79,6 +105,7 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
             color={GlobalStyles.colors.error500}
             size={36}
             onPress={deleteExpenseHandler}
+            isLoading={loading.isDeleting}
           />
         </View>
       )}
