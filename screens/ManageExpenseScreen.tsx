@@ -36,16 +36,26 @@ const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
       const expense = expenses.find((e) => e.id === expenseId);
       if (expense) {
         return {
-          amount: expense.amount.toString(),
-          date: getFormattedDate(expense.date),
-          description: expense.description,
+          amount: {
+            value: expense.amount.toString(),
+            isValid: true,
+          },
+          date: {
+            value: getFormattedDate(expense.date),
+            isValid: true,
+          },
+          description: {
+            value: expense.description,
+            isValid: true,
+          },
         };
       }
     }
+    const initialValue = { value: "", isValid: true };
     return {
-      amount: "",
-      date: "",
-      description: "",
+      amount: initialValue,
+      date: initialValue,
+      description: initialValue,
     };
   };
 

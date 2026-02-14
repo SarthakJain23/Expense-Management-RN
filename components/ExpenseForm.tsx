@@ -4,10 +4,15 @@ import { Expense } from "../configs/types";
 import Button from "./UI/Button";
 import Input from "./UI/Input";
 
+type InputField<T> = {
+  value: T;
+  isValid: boolean;
+};
+
 export type ExpenseFormData = {
-  amount: string;
-  date: string;
-  description: string;
+  amount: InputField<string>;
+  date: InputField<string>;
+  description: InputField<string>;
 };
 
 interface ExpenseFormProps {
@@ -28,15 +33,15 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const [formData, setFormData] = useState<ExpenseFormData>(initialData);
 
   const onChangeInput = (field: keyof ExpenseFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: { value, isValid: true } }));
   };
 
   const onSubmitHandler = () => {
     const data: Expense = {
       id: expnenseId || Math.random().toString(),
-      amount: parseFloat(formData.amount),
-      date: new Date(formData.date),
-      description: formData.description,
+      amount: parseFloat(formData.amount.value),
+      date: new Date(formData.date.value),
+      description: formData.description.value,
     };
 
     const amountIsValid = !isNaN(data.amount) && data.amount > 0;
@@ -44,6 +49,14 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
     const descriptionIsValid = data.description.trim().length > 0;
 
     if (!amountIsValid || !dateIsValid || !descriptionIsValid) {
+      setFormData((prev) => ({
+        amount: { value: prev.amount.value, isValid: amountIsValid },
+        date: { value: prev.date.value, isValid: dateIsValid },
+        description: {
+          value: prev.description.value,
+          isValid: descriptionIsValid,
+        },
+      }));
       return;
     }
 
@@ -56,14 +69,20 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
       <View style={styles.inputsRow}>
         <Input
           label="Amount"
-          value={formData.amount}
+          value={formData.amount.value}
+          error={
+            !formData.amount.isValid ? "Please enter a valid amount" : undefined
+          }
           inputContainerStyle={styles.rowInput}
           keyboardType="decimal-pad"
           onChangeText={onChangeInput.bind(null, "amount")}
         />
         <Input
           label="Date"
-          value={formData.date}
+          value={formData.date.value}
+          error={
+            !formData.date.isValid ? "Please enter a valid date" : undefined
+          }
           placeholder="YYYY-MM-DD"
           maxLength={10}
           inputContainerStyle={styles.rowInput}
@@ -72,7 +91,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
       </View>
       <Input
         label="Description"
-        value={formData.description}
+        value={formData.description.value}
+        error={
+          !formData.description.isValid
+            ? "Please enter a valid description"
+            : undefined
+        }
         multiline
         onChangeText={onChangeInput.bind(null, "description")}
       />
