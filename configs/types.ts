@@ -4,8 +4,10 @@ export type Expense = {
   id: string;
   description: string;
   amount: number;
-  date: Date;
+  date: string;
 };
+
+export type ExpenseInput = Omit<Expense, "id">;
 
 export type BottomTabParamList = {
   AllExpenses: undefined;

@@ -2,38 +2,42 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { StyleSheet, View } from "react-native";
 import ExpenseForm, { ExpenseFormData } from "../components/ExpenseForm";
 import IconButton from "../components/UI/IconButton";
-import { Expense, RootStackParamList } from "../configs/types";
+import { ExpenseInput, RootStackParamList } from "../configs/types";
 import { GlobalStyles } from "../constants/styles";
 import { useExpenses } from "../store/expenses-context";
 import { getFormattedDate } from "../util/date";
+import { deleteExpense, storeExpense, updateExpense } from "../util/http";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ManageExpense">;
 
 const ManageExpenseScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { expenses, addExpense, deleteExpense, updateExpense } = useExpenses();
   const { expenseId } = route.params || {};
+  const expensesCtx = useExpenses();
   const isEditing = Boolean(expenseId);
 
   const cancelHandler = () => {
     navigation.goBack();
   };
 
-  const confirmHandler = (values: Expense) => {
+  const confirmHandler = async (values: ExpenseInput) => {
     if (isEditing) {
-      updateExpense(expenseId!, values);
+      await updateExpense(expenseId!, values);
+      expensesCtx.updateExpense(expenseId!, values);
     } else {
-      addExpense(values);
+      const expense = await storeExpense(values);
+      expensesCtx.addExpense(expense);
     }
     navigation.goBack();
   };
-  const deleteExpenseHandler = () => {
-    deleteExpense(expenseId!);
+  const deleteExpenseHandler = async () => {
+    await deleteExpense(expenseId!);
+    expensesCtx.deleteExpense(expenseId!);
     navigation.goBack();
   };
 
   const getExpenseData = (): ExpenseFormData => {
     if (isEditing) {
-      const expense = expenses.find((e) => e.id === expenseId);
+      const expense = expensesCtx.expenses.find((e) => e.id === expenseId);
       if (expense) {
         return {
           amount: {

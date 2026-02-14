@@ -1,4 +1,7 @@
-export const getFormattedDate = (date: Date): string => {
+export const getFormattedDate = (date: Date | string): string => {
+  if (typeof date === "string") {
+    date = new Date(date);
+  }
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");

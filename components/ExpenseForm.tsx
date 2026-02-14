@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Expense } from "../configs/types";
+import { ExpenseInput } from "../configs/types";
 import Button from "./UI/Button";
 import Input from "./UI/Input";
 
@@ -20,7 +20,7 @@ interface ExpenseFormProps {
   submitButtonLabel: string;
   initialData: ExpenseFormData;
   onCancel: () => void;
-  onSubmit: (data: Expense) => void;
+  onSubmit: (data: ExpenseInput) => void;
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({
@@ -37,10 +37,9 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({
   };
 
   const onSubmitHandler = () => {
-    const data: Expense = {
-      id: expnenseId || Math.random().toString(),
+    const data: ExpenseInput = {
       amount: parseFloat(formData.amount.value),
-      date: new Date(formData.date.value),
+      date: formData.date.value,
       description: formData.description.value,
     };
 

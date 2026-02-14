@@ -1,34 +1,45 @@
-import { createContext, useContext, useReducer } from "react";
-import { Expense } from "../configs/types";
+import { createContext, useContext, useEffect, useReducer } from "react";
+import { Expense, ExpenseInput } from "../configs/types";
+import { fetchExpenses } from "../util/http";
 
 interface ExpensesContextType {
   expenses: Expense[];
-  addExpense: (expense: Expense) => void;
   deleteExpense: (id: string) => void;
-  updateExpense: (id: string, expense: Expense) => void;
+  addExpense: (expense: Expense) => void;
+  setExpenses: (expenses: Expense[]) => void;
+  updateExpense: (id: string, expense: ExpenseInput) => void;
 }
 
 export const ExpensesContext = createContext<ExpensesContextType>({
   expenses: [],
   addExpense: () => {},
+  setExpenses: () => {},
   deleteExpense: () => {},
   updateExpense: () => {},
 });
 
 type Action =
+  | { type: "SET"; payload: Expense[] }
   | { type: "ADD"; payload: Expense }
   | { type: "DELETE"; payload: string }
-  | { type: "UPDATE"; payload: { id: string; expense: Expense } };
+  | { type: "UPDATE"; payload: { id: string; expense: ExpenseInput } };
 
 const expensesReducer = (state: Expense[], action: Action): Expense[] => {
   switch (action.type) {
     case "ADD":
       return [...state, action.payload];
+    case "SET":
+      return action.payload;
     case "DELETE":
       return state.filter((expense) => expense.id !== action.payload);
     case "UPDATE":
       return state.map((expense) =>
-        expense.id === action.payload.id ? action.payload.expense : expense,
+        expense.id === action.payload.id
+          ? {
+              ...expense,
+              ...action.payload.expense,
+            }
+          : expense,
       );
     default:
       return state;
@@ -42,18 +53,30 @@ interface ExpensesContextProviderProps {
 const ExpensesContextProvider: React.FC<ExpensesContextProviderProps> = ({
   children,
 }) => {
-  const [expenseState, dispatch] = useReducer(expensesReducer, []);
+  const [expenses, dispatch] = useReducer(expensesReducer, []);
 
   const addExpense = (expense: Expense) =>
     dispatch({ type: "ADD", payload: expense });
   const deleteExpense = (id: string) =>
     dispatch({ type: "DELETE", payload: id });
-  const updateExpense = (id: string, expense: Expense) =>
+  const updateExpense = (id: string, expense: ExpenseInput) =>
     dispatch({ type: "UPDATE", payload: { id, expense } });
+  const setExpenses = (expenses: Expense[]) =>
+    dispatch({ type: "SET", payload: expenses });
+
+  const loadExpenses = async () => {
+    const expenses = await fetchExpenses();
+    setExpenses(expenses);
+  };
+
+  useEffect(() => {
+    loadExpenses();
+  }, []);
 
   const value: ExpensesContextType = {
-    expenses: expenseState,
+    expenses,
     addExpense,
+    setExpenses,
     deleteExpense,
     updateExpense,
   };
